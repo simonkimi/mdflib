@@ -5,17 +5,18 @@ MdfUtcTimestamp::MdfUtcTimestamp(uint64_t utc_timestamp) {
   utc_timestamp_ = utc_timestamp;
 }
 
-mdf::ITimestamp* MdfUtcTimestamp::GetTimestamp() {
-  return new mdf::UtcTimestamp(utc_timestamp_);
+uint64_t MdfUtcTimestamp::UtcTimestamp::get() {
+  return utc_timestamp_;
 }
 
 MdfLocalTimestamp::MdfLocalTimestamp(uint64_t local_timestamp) {
   local_timestamp_ = local_timestamp;
 }
 
-mdf::ITimestamp* MdfLocalTimestamp::GetTimestamp() {
-  return new mdf::LocalTimestamp(local_timestamp_);
+uint64_t MdfLocalTimestamp::LocalTimestamp::get() {
+  return local_timestamp_;
 }
+
 
 MdfTimezoneTimestamp::MdfTimezoneTimestamp(uint64_t utc_timestamp,
                                            int16_t timezone_offset_min,
@@ -25,8 +26,15 @@ MdfTimezoneTimestamp::MdfTimezoneTimestamp(uint64_t utc_timestamp,
   dst_offset_min_ = dst_offset_min;
 }
 
-mdf::ITimestamp* MdfTimezoneTimestamp::GetTimestamp() {
-  return new mdf::TimezoneTimestamp(utc_timestamp_, timezone_offset_min_,
-                                    dst_offset_min_);
+uint64_t MdfTimezoneTimestamp::UtcTimestamp::get() {
+  return utc_timestamp_;
+}
+
+int16_t MdfTimezoneTimestamp::TimezoneOffsetMin::get() {
+  return timezone_offset_min_;
+}
+
+int16_t MdfTimezoneTimestamp::DstOffsetMin::get() {
+  return dst_offset_min_;
 }
 }
