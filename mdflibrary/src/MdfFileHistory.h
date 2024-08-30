@@ -11,8 +11,6 @@
 
 using namespace System;
 namespace MdfLibrary {
-interface class IMdfTimeStamp;
-ref class MdfFileTimestamp;
 
 public ref class MdfFileHistory {
 public:
