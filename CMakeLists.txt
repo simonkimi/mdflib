@@ -42,7 +42,6 @@ project(
   LANGUAGES CXX)
   
 add_subdirectory(mdflib)
-add_subdirectory(mdflib_runner)
 
 if(MDF_BUILD_SHARED_LIB)
   if(NOT (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.36))
