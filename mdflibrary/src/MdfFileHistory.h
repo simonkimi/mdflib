@@ -6,6 +6,8 @@
 #pragma once
 #include <mdf/ifilehistory.h>
 #include "MdfMetaData.h"
+#include "MdfTimestamp.h"
+#include "MdfFileTimestamp.h"
 
 using namespace System;
 namespace MdfLibrary {
@@ -22,6 +24,10 @@ public:
   property String^ ToolVendor { String^ get(); void set(String^ vendor); }
   property String^ ToolVersion { String^ get(); void set(String^ version); }
   property String^ UserName { String^ get(); void set(String^ user); }
+
+  void SetStartTime(IMdfTimeStamp^ timestamp);
+  MdfFileTimestamp^ GetStartTime();
+
 private:
   MdfFileHistory() {}
 internal:

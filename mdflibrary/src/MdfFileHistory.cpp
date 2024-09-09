@@ -84,6 +84,30 @@ void MdfFileHistory::UserName::set(String^ user) {
   }      
 }
 
+void MdfFileHistory::SetStartTime(IMdfTimeStamp^ timestamp) {
+  if (history_ != nullptr) {
+    if (auto utc = dynamic_cast<MdfUtcTimestamp^>(timestamp)) {
+      mdf::UtcTimestamp temp(utc->UtcTimestamp);
+      history_->Time(temp);
+    } else if (auto local = dynamic_cast<MdfLocalTimestamp^>(timestamp)) {
+      mdf::LocalTimestamp temp(local->LocalTimestamp);
+      history_->Time(temp);
+    } else if (auto tz = dynamic_cast<MdfTimezoneTimestamp^>(timestamp)) {
+      mdf::TimezoneTimestamp temp(tz->UtcTimestamp, tz->TimezoneOffsetMin, tz->DstOffsetMin);
+      history_->Time(temp);
+    }
+  }
+}
+
+IMdfFileTimestamp^ MdfFileHistory::GetStartTime() {
+  if (history_ == nullptr) { return nullptr; }
+  const auto* time = history_->StartTimestamp();
+  if (time == nullptr) {
+    return nullptr;
+  }
+  return GetMdfFileTimestampByIMdfTimestamp(time);
+}
+
 MdfFileHistory::MdfFileHistory(mdf::IFileHistory* history)
   : history_(history) {
 }
