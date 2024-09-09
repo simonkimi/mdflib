@@ -167,6 +167,20 @@ class MdfWriter {
   [[nodiscard]] static IChannel* CreateChannel(IChannelGroup* parent);
   /** \brief Create a new channel conversion (CC) block. */
   virtual IChannelConversion* CreateChannelConversion(IChannel* parent) = 0;
+  
+  /** \brief Sets the auto flush option.
+   *
+   * Sets whether the data should be automatically flushed to the file.
+   * @param auto_flush If true, data will be automatically flushed.
+   */
+  void SetAutoFlush(bool auto_flush);
+
+  /** \brief Flushes the data to the file.
+   *
+   * This function flushes the data in the sample queue to the file.
+   * @return Returns true if the flush was successful.
+   */
+  void Flush();
 
   /** \brief Initialize the sample queue and write any unwritten block to the
    * file.
@@ -332,8 +346,10 @@ class MdfWriter {
   MdfStorageType storage_type_ = MdfStorageType::FixedLengthStorage;
   uint32_t max_length_ = 8; ///< Max data byte storage
   std::map<uint64_t, const IChannel*> master_channels_; ///< List of master channels
+  bool auto_flush_ = true; ///< True if auto flush is enabled.
   void RecalculateTimeMaster();
   void CreateCanConfig(IDataGroup& dg_block) const;
+  void FlushQueue(std::unique_lock<std::mutex>& lock);
 
   /** \brief Create the composition channels for a data frame
   *

@@ -184,7 +184,9 @@ bool MdfWriter::InitMeasurement() {
   // Start the working thread that handles the samples
   write_state_ = WriteState::Init;  // Waits for new samples
   sample_queue_size_ = 0;
-  work_thread_ = std::thread(&MdfWriter::WorkThread, this);
+  if (auto_flush_) {
+    work_thread_ = std::thread(&MdfWriter::WorkThread, this);
+  }
   return write;
 }
 
@@ -409,30 +411,39 @@ void MdfWriter::TrimQueue() {
   }
 }
 
+void MdfWriter::FlushQueue(std::unique_lock<std::mutex>& lock) {
+  switch (write_state_) {
+    case WriteState::Init: {
+      TrimQueue();  // Purge the queue using pre-trig time
+      break;
+    }
+    case WriteState::StartMeas: {
+      SaveQueue(lock);  // Save the contents of the queue to file
+      break;
+    }
+      
+    case WriteState::StopMeas: {
+      CleanQueue(lock);
+      break;
+    }
+
+    default:
+      sample_queue_.clear();
+      break;
+  }
+}
+
+void MdfWriter::Flush() { 
+  std::unique_lock lock(locker_);
+  FlushQueue(lock);
+}
+
 void MdfWriter::WorkThread() {
   do {
     // Wait on stop condition
     std::unique_lock lock(locker_);
     sample_event_.wait_for(lock, 10s, [&] { return stop_thread_.load(); });
-    switch (write_state_) {
-      case WriteState::Init: {
-        TrimQueue();  // Purge the queue using pre-trig time
-        break;
-      }
-      case WriteState::StartMeas: {
-        SaveQueue(lock);  // Save the contents of the queue to file
-        break;
-      }
-
-      case WriteState::StopMeas: {
-        CleanQueue(lock);
-        break;
-      }
-
-      default:
-        sample_queue_.clear();
-        break;
-    }
+    FlushQueue(lock);
   } while (!stop_thread_);
   {
     std::unique_lock lock(locker_);
@@ -1009,5 +1020,7 @@ void MdfWriter::CreateCanOverloadFrameChannel(IChannelGroup& group) {
   CreateBitChannel(*cn_overload_frame,"CAN_OverloadFrame.Dir", 8 + 0, 0);
 
 }
+
+void MdfWriter::SetAutoFlush(bool auto_flush) { auto_flush_ = auto_flush; }
 
 }  // namespace mdf
