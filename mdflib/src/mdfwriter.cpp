@@ -366,7 +366,9 @@ bool MdfWriter::FinalizeMeasurement() {
     MDF_ERROR() << "The MDF file is not created. Invalid use of the function.";
     return false;
   }
-
+  if (writerFile != nullptr) {
+    fclose(writerFile);
+  }
   std::FILE* file = nullptr;
   detail::OpenMdfFile(file, filename_, "r+b");
   if (file == nullptr) {
@@ -468,14 +470,15 @@ void MdfWriter::SaveQueue(std::unique_lock<std::mutex>& lock) {
   }
 
   lock.unlock();
-  std::FILE* file = nullptr;
-  Platform::fileopen(&file, filename_.c_str(), "r+b");
-  if (file == nullptr) {
+  if (writerFile == nullptr) {
+    Platform::fileopen(&writerFile, filename_.c_str(), "r+b"); 
+  }
+  if (writerFile == nullptr) {
     lock.lock();
     return;
   }
 
-  SetLastPosition(file);
+  SetLastPosition(writerFile);
 
   lock.lock();
 
@@ -494,12 +497,13 @@ void MdfWriter::SaveQueue(std::unique_lock<std::mutex>& lock) {
 
     if (dg3->NofRecordId() > 0) {
       const auto id = static_cast<uint8_t>(sample.record_id);
-      fwrite(&id, 1, 1, file);
+      fwrite(&id, 1, 1, writerFile);
     }
-    fwrite(sample.record_buffer.data(), 1, sample.record_buffer.size(), file);
+    fwrite(sample.record_buffer.data(), 1, sample.record_buffer.size(), writerFile);
+    sample_record_size_ = sample.record_buffer.size();
     if (dg3->NofRecordId() > 1) {
       const auto id = static_cast<uint8_t>(sample.record_id);
-      fwrite(&id, 1, 1, file);
+      fwrite(&id, 1, 1, writerFile);
     }
     IncrementNofSamples(sample.record_id);
     lock.lock();
@@ -509,11 +513,10 @@ void MdfWriter::SaveQueue(std::unique_lock<std::mutex>& lock) {
   lock.unlock();
   for (const auto& cg3 : dg3->Cg3()) {
     if (cg3 != nullptr) {
-      cg3->Write(file);
+      cg3->Write(writerFile);
     }
   }
-
-  fclose(file);
+  
   lock.lock();
 }
 
@@ -1022,5 +1025,6 @@ void MdfWriter::CreateCanOverloadFrameChannel(IChannelGroup& group) {
 }
 
 void MdfWriter::SetAutoFlush(bool auto_flush) { auto_flush_ = auto_flush; }
+uint64_t MdfWriter::GetLastSampleRecordSize() { return sample_record_size_;}
 
 }  // namespace mdf

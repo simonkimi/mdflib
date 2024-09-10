@@ -133,6 +133,10 @@ public ref class MdfWriter {
   void StopMeasurement(uint64_t stop_time);
   void StopMeasurement(DateTime stop_time);
   bool FinalizeMeasurement();
+  void Flush();
+  uint64_t GetLastSampleRecordSize();
+  void SetAutoFlush(bool auto_flush);
+
 
  protected:
   !MdfWriter();

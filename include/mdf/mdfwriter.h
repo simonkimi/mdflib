@@ -292,6 +292,8 @@ class MdfWriter {
   void CompressData(bool compress) {compress_data_ = compress;}
   /** \brief Returns true if the data block is compressed. */
   [[nodiscard]] bool CompressData() const { return compress_data_;}
+  
+  uint64_t GetLastSampleRecordSize();
 
  protected:
   /** \brief Internal state of the thread. */
@@ -347,6 +349,8 @@ class MdfWriter {
   uint32_t max_length_ = 8; ///< Max data byte storage
   std::map<uint64_t, const IChannel*> master_channels_; ///< List of master channels
   bool auto_flush_ = true; ///< True if auto flush is enabled.
+  uint64_t sample_record_size_ = 0;
+  std::FILE *writerFile = nullptr;
   void RecalculateTimeMaster();
   void CreateCanConfig(IDataGroup& dg_block) const;
   void FlushQueue(std::unique_lock<std::mutex>& lock);

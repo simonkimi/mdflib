@@ -164,4 +164,19 @@ bool MdfWriter::FinalizeMeasurement() {
   return writer_ != nullptr ? writer_->FinalizeMeasurement() : false;
 }
 
+void MdfWriter::Flush() {
+  if (writer_ != nullptr) {
+    writer_->Flush();
+  }
+}
+
+uint64_t MdfWriter::GetLastSampleRecordSize() {
+    return writer_ != nullptr ? writer_->GetLastSampleRecordSize() : 0;
+}
+
+void MdfWriter::SetAutoFlush(bool auto_flush) {
+  if (writer_ != nullptr) {
+    writer_->SetAutoFlush(auto_flush);
+  }
+}
 }  // namespace MdfLibrary
