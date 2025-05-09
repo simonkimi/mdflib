@@ -218,8 +218,16 @@ MdfMetaData^ MdfHeader::CreateMetaData() {
 
 void MdfHeader::SetStartTime(IMdfTimeStamp^ timestamp) {
   if (header_ != nullptr) {
-    const auto time = timestamp->GetTimestamp();
-    header_->StartTime(*time);
+    if (auto utc = dynamic_cast<MdfUtcTimestamp^>(timestamp)) {
+      mdf::UtcTimestamp temp(utc->UtcTimestamp);
+      header_->StartTime(temp);
+    } else if (auto local = dynamic_cast<MdfLocalTimestamp^>(timestamp)) {
+      mdf::LocalTimestamp temp(local->LocalTimestamp);
+      header_->StartTime(temp);
+    } else if (auto tz = dynamic_cast<MdfTimezoneTimestamp^>(timestamp)) {
+      mdf::TimezoneTimestamp temp(tz->UtcTimestamp, tz->TimezoneOffsetMin, tz->DstOffsetMin);
+      header_->StartTime(temp);
+    }
   }  
 }
 

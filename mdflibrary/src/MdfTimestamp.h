@@ -1,20 +1,17 @@
 #pragma once
 #include <cstdint>
-#include <memory>
 
 #include "mdf/itimestamp.h"
 
 namespace MdfLibrary {
 public interface class IMdfTimeStamp {
-  std::unique_ptr<mdf::ITimestamp> GetTimestamp();
 };
 
 
 public ref class MdfUtcTimestamp : public IMdfTimeStamp {
 public:
   explicit MdfUtcTimestamp(uint64_t utc_timestamp);
-  explicit MdfUtcTimestamp(System::DateTime time);
-  virtual std::unique_ptr<mdf::ITimestamp> GetTimestamp();
+  property uint64_t UtcTimestamp { uint64_t get(); }
 
 private:
   uint64_t utc_timestamp_;
@@ -24,8 +21,7 @@ private:
 public ref class MdfLocalTimestamp : public IMdfTimeStamp {
 public:
   explicit MdfLocalTimestamp(uint64_t local_timestamp);
-  explicit MdfLocalTimestamp(System::DateTime time);
-  virtual std::unique_ptr<mdf::ITimestamp> GetTimestamp();
+  property uint64_t LocalTimestamp { uint64_t get(); }
 
 private:
   uint64_t local_timestamp_;
@@ -37,10 +33,9 @@ public:
   explicit MdfTimezoneTimestamp(uint64_t utc_timestamp,
                                 int16_t timezone_offset_min,
                                 int16_t dst_offset_min);
-  explicit MdfTimezoneTimestamp(System::DateTime time,
-                                int16_t timezone_offset_min,
-                                int16_t dst_offset_min);
-  virtual std::unique_ptr<mdf::ITimestamp> GetTimestamp();
+  property uint64_t UtcTimestamp { uint64_t get(); }
+  property int16_t TimezoneOffsetMin { int16_t get(); }
+  property int16_t DstOffsetMin { int16_t get(); }
 
 private:
   uint64_t utc_timestamp_;
